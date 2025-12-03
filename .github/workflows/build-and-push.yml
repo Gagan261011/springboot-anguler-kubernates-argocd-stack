@@ -1,0 +1,81 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+env:
+  AWS_REGION: us-east-1
+  BACKEND_REPO: ${{ secrets.BACKEND_ECR_REPO }}
+  FRONTEND_REPO: ${{ secrets.FRONTEND_ECR_REPO }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build backend image
+        run: |
+          docker build -t $BACKEND_REPO:latest -t $BACKEND_REPO:${GITHUB_SHA} app/backend
+      - name: Build frontend image
+        run: |
+          docker build -t $FRONTEND_REPO:latest -t $FRONTEND_REPO:${GITHUB_SHA} app/frontend
+
+      - name: Push images
+        run: |
+          docker push $BACKEND_REPO:latest
+          docker push $BACKEND_REPO:${GITHUB_SHA}
+          docker push $FRONTEND_REPO:latest
+          docker push $FRONTEND_REPO:${GITHUB_SHA}
+
+      - name: Update kustomization with new image tags
+        run: |
+          pip install pyyaml
+          python - <<'PY'
+import yaml
+import os
+path = "gitops/kustomization.yaml"
+with open(path) as f:
+    data = yaml.safe_load(f)
+sha = os.environ.get("GITHUB_SHA")
+backend_repo = os.environ.get("BACKEND_REPO")
+frontend_repo = os.environ.get("FRONTEND_REPO")
+for img in data.get("images", []):
+    if img.get("name") == "backend-image":
+        img["newName"] = backend_repo
+        img["newTag"] = sha
+    if img.get("name") == "frontend-image":
+        img["newName"] = frontend_repo
+        img["newTag"] = sha
+with open(path, "w") as f:
+    yaml.safe_dump(data, f)
+PY
+
+      - name: Commit and push manifest changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add gitops/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "No manifest changes to commit."
+            exit 0
+          fi
+          git commit -m "ci: update images to ${GITHUB_SHA}"
+          git push

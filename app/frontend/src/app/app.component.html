@@ -1,0 +1,54 @@
+<div class="container">
+  <h1>{{ title }}</h1>
+  <div class="actions">
+    <button (click)="load()" [disabled]="loading">Refresh</button>
+    <span class="error" *ngIf="error">{{ error }}</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Employees</h2>
+      <div *ngIf="loading">Loading...</div>
+      <table *ngIf="!loading">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Salary</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of employees">
+            <td>{{ emp.name }}</td>
+            <td>{{ emp.department }}</td>
+            <td>{{ emp.salary | currency }}</td>
+            <td>
+              <button (click)="edit(emp)">Edit</button>
+              <button class="danger" (click)="remove(emp)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>{{ selected.id ? 'Edit Employee' : 'New Employee' }}</h2>
+      <form (ngSubmit)="save()">
+        <label>Name
+          <input name="name" [(ngModel)]="selected.name" required />
+        </label>
+        <label>Department
+          <input name="department" [(ngModel)]="selected.department" required />
+        </label>
+        <label>Salary
+          <input name="salary" type="number" [(ngModel)]="selected.salary" required />
+        </label>
+        <div class="buttons">
+          <button type="submit" [disabled]="loading">{{ selected.id ? 'Update' : 'Create' }}</button>
+          <button type="button" (click)="cancel()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ems-app
+resources:
+  - namespace.yaml
+  - backend-deployment.yaml
+  - backend-service.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+images:
+  - name: backend-image
+    newName: 111111111111.dkr.ecr.us-east-1.amazonaws.com/ems-backend
+    newTag: latest
+  - name: frontend-image
+    newName: 111111111111.dkr.ecr.us-east-1.amazonaws.com/ems-frontend
+    newTag: latest
