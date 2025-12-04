@@ -21,14 +21,24 @@ spec:
         - name: frontend
           image: frontend-image
           imagePullPolicy: Always
-          env:
-            - name: API_BASE_URL
-              value: "http://ems-backend.ems-app.svc.cluster.local:8080/api"
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
               port: 80
             initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 20

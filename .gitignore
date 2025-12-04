@@ -1,0 +1,52 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend (Java/Maven)
+app/backend/target/
+app/backend/*.jar
+app/backend/.mvn/
+app/backend/mvnw
+app/backend/mvnw.cmd
+
+# Frontend (Node/Angular)
+app/frontend/node_modules/
+app/frontend/dist/
+app/frontend/.angular/
+app/frontend/npm-debug.log
+app/frontend/yarn-error.log
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+!.env.example

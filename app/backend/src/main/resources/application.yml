@@ -2,14 +2,18 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:h2:mem:emsdb
+    url: jdbc:h2:mem:emsdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  sql:
+    init:
+      mode: always
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
   h2:
     console:
       enabled: true
